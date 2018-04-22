@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  main:
+    build: .
+    environment:
+      UNMS_URL: "https://unms-demo.ubnt.com/v2.0"
+      UNMS_TOKEN: ""
