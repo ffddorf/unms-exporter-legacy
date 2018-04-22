@@ -4,16 +4,27 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	unms "github.com/ffddorf/unms-api-go"
 )
 
 func main() {
+	url, exists := os.LookupEnv("UNMS_URL")
+	if !exists {
+		log.Fatal("Please specify the URL of the UNMS API in your environment via UNMS_URL")
+	}
+
+	token, exists := os.LookupEnv("UNMS_TOKEN")
+	if !exists {
+		log.Fatal("Please specify an API_TOKEN to the UNMS API in your environment via UNMS_TOKEN")
+	}
+
 	config := unms.NewConfiguration()
-	config.BasePath = "http://unms-demo.ubnt.com/v2.0"
+	config.BasePath = url
 	client := unms.NewAPIClient(config)
 	auth := context.WithValue(context.Background(), unms.ContextAPIKey, unms.APIKey{
-		Key: "123",
+		Key: token,
 	})
 	deviceStatusOverview, _, err := client.DevicesApi.DevicesGet(auth, "1", nil)
 	if err != nil {
