@@ -25,7 +25,7 @@ func NewUnmsCollector(client *unms.APIClient, clientCtx context.Context, site st
 		up: prometheus.NewDesc(
 			namespace+"_"+"device_up",
 			"If device is connected to UNMS.",
-			[]string{"name", "id"},
+			[]string{"id"},
 			nil,
 		),
 	}
@@ -51,7 +51,6 @@ func (c *unmsCollector) Collect(ch chan<- prometheus.Metric) {
 			c.up,
 			prometheus.GaugeValue,
 			up,
-			device.Identification.Name,
 			device.Identification.Id,
 		)
 	}
