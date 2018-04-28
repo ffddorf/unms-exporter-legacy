@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	unms "github.com/ffddorf/unms-api-go"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -26,11 +28,10 @@ func main() {
 	auth := context.WithValue(context.Background(), unms.ContextAPIKey, unms.APIKey{
 		Key: token,
 	})
-	deviceStatusOverview, _, err := client.DevicesApi.DevicesGet(auth, "1", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for index, device := range deviceStatusOverview {
-		fmt.Println(index, device.Identification.Name, device.Overview.Status)
-	}
+
+	unmsCollector := NewUnmsCollector(client, auth, "")
+	prometheus.MustRegister(unmsCollector)
+
+	http.Handle("/metrics", promhttp.Handler())
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
