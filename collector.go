@@ -9,34 +9,34 @@ import (
 )
 
 type unmsCollector struct {
-	client    *unms.APIClient
+	client *unms.APIClient
 	clientCtx context.Context
-	site      string
-  devices   []unms.DeviceStatusOverview
-	up        *prometheus.Desc
-  device_name *prometheus.Desc
+	site string
+	devices []unms.DeviceStatusOverview
+	up *prometheus.Desc
+	device_name *prometheus.Desc
 }
 
 const namespace = "unms"
 
 func NewUnmsCollector(client *unms.APIClient, clientCtx context.Context, site string) prometheus.Collector {
 	c := unmsCollector{
-		client:    client,
+		client: client,
 		clientCtx: clientCtx,
-		site:      site,
-    devices: []unms.DeviceStatusOverview{},
+		site: site,
+		devices: []unms.DeviceStatusOverview{},
 		up: prometheus.NewDesc(
 			namespace+"_"+"device_up",
 			"If device is connected to UNMS.",
 			[]string{"id"},
 			nil,
 		),
-    device_name: prometheus.NewDesc(
-      namespace+"_"+"device_name",
-      "The ID and name of a device. Value is always 0.",
-      []string{"id","name"},
-      nil,
-    ),
+		device_name: prometheus.NewDesc(
+			namespace+"_"+"device_name",
+			"The ID and name of a device. Value is always 0.",
+			[]string{"id","name"},
+			nil,
+		),
 	}
 
 	return &c
@@ -52,9 +52,9 @@ func (c *unmsCollector) getDeviceStatusOverview() {
 	deviceStatusOverview, _, err := c.client.DevicesApi.DevicesGet(c.clientCtx, c.site, nil)
 	if err != nil {
 		log.Println(err)
-    return
+		return
 	}
-  c.devices = deviceStatusOverview
+	c.devices = deviceStatusOverview
 }
 
 func (c *unmsCollector) collectMetricDeviceUp(ch chan<- prometheus.Metric) {
@@ -73,19 +73,19 @@ func (c *unmsCollector) collectMetricDeviceUp(ch chan<- prometheus.Metric) {
 }
 
 func (c *unmsCollector) collectMetricDeviceName(ch chan<- prometheus.Metric) {
-  for _, device := range c.devices {
-    ch <- prometheus.MustNewConstMetric (
-      c.device_name,
-      prometheus.GaugeValue,
-      float64(0),
-      device.Identification.Id,
-      device.Identification.Name,
-    )
-  }
+	for _, device := range c.devices {
+		ch <- prometheus.MustNewConstMetric (
+			c.device_name,
+			prometheus.GaugeValue,
+			float64(0),
+			device.Identification.Id,
+			device.Identification.Name,
+		)
+	}
 }
 
 func (c *unmsCollector) Collect(ch chan<- prometheus.Metric) {
-  c.getDeviceStatusOverview()
-  c.collectMetricDeviceUp(ch)
-  c.collectMetricDeviceName(ch)
+	c.getDeviceStatusOverview()
+	c.collectMetricDeviceUp(ch)
+	c.collectMetricDeviceName(ch)
 }
