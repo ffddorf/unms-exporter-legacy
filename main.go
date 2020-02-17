@@ -1,18 +1,16 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"os"
 
-	unms "github.com/ffddorf/unms-api-go"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
-	url, exists := os.LookupEnv("UNMS_URL")
+	unmsURL, exists := os.LookupEnv("UNMS_URL")
 	if !exists {
 		log.Fatal("Please specify the URL of the UNMS API in your environment via UNMS_URL")
 	}
@@ -22,16 +20,17 @@ func main() {
 		log.Fatal("Please specify an API_TOKEN to the UNMS API in your environment via UNMS_TOKEN")
 	}
 
-	config := unms.NewConfiguration()
-	config.BasePath = url
-	client := unms.NewAPIClient(config)
-	auth := context.WithValue(context.Background(), unms.ContextAPIKey, unms.APIKey{
-		Key: token,
-	})
+	siteID, exists := os.LookupEnv("UNMS_SITE_ID")
+	if !exists {
+		log.Fatal("Please specify a Site ID in your environment via UNMS_SITE_ID")
+	}
 
-	unmsCollector := NewUnmsCollector(client, auth, "")
-	prometheus.MustRegister(unmsCollector)
+	client := NewClient(unmsURL, token)
+	collector := NewUnmsCollector(client, siteID)
+	prometheus.MustRegister(collector)
 
 	http.Handle("/metrics", promhttp.Handler())
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		panic(err)
+	}
 }
