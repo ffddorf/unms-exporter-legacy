@@ -1,5 +1,5 @@
 # unms_exporter
 
-:construction: Prometheus exporter for the Ubiquiti Network Management System (UNMS)
+:warning: Outdated codebase. Latest code on https://github.com/ffddorf/unms-exporter
 
-Nothing to see here, yet. :)
+Prometheus exporter for the Ubiquiti Network Management System (UNMS)
